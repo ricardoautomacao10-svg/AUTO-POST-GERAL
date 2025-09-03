@@ -1,0 +1,113 @@
+{% extends "layout.html" %}
+
+{% block title %}Painel de Gestão{% endblock %}
+
+{% block content %}
+
+<!-- Seção de Automação RSS -->
+<div class="card p-6 mb-8">
+    <h2 class="text-2xl font-bold mb-2">Automação de Feeds RSS</h2>
+    <p class="text-gray-600 mb-4">Clique no botão para buscar e publicar automaticamente as últimas notícias dos feeds RSS de todos os clientes configurados.</p>
+    <form action="{{ url_for('run_automation') }}" method="POST">
+        <button type="submit" class="w-full bg-teal-600 text-white font-semibold py-2 px-4 rounded-md hover:bg-teal-700 transition-colors">
+            Buscar e Publicar Novidades Automaticamente
+        </button>
+    </form>
+</div>
+
+
+<!-- Seção de Geração Manual -->
+<div class="card p-6 mb-8">
+    <h2 class="text-2xl font-bold mb-4">Publicação Manual por Link</h2>
+    <form action="{{ url_for('generate_manual_post') }}" method="POST" class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+        <div class="md:col-span-2">
+            <label for="article_url" class="block text-sm font-medium text-gray-700">URL da Notícia</label>
+            <input type="url" name="article_url" id="article_url" required placeholder="https://..." class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+        </div>
+        <div>
+            <label for="client_id" class="block text-sm font-medium text-gray-700">Cliente</label>
+            <select id="client_id" name="client_id" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                {% for client in clients %}
+                <option value="{{ client.id }}">{{ client.name }}</option>
+                {% else %}
+                <option disabled>Nenhum cliente cadastrado</option>
+                {% endfor %}
+            </select>
+        </div>
+        <button type="submit" class="w-full bg-indigo-600 text-white font-semibold py-2 px-4 rounded-md hover:bg-indigo-700 transition-colors">
+            Gerar e Publicar
+        </button>
+    </form>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <!-- Formulário para Adicionar Cliente -->
+    <div class="lg:col-span-1">
+        <div class="card p-6">
+            <h2 class="text-2xl font-bold mb-4">Adicionar Novo Cliente</h2>
+            <form action="{{ url_for('add_client') }}" method="POST" class="space-y-4">
+                <h3 class="font-semibold border-b pb-1">Informações Básicas</h3>
+                <div><label class="block text-sm font-medium">Nome do Cliente</label><input name="name" required class="mt-1 w-full rounded-md border-gray-300 shadow-sm"></div>
+                <div><label class="block text-sm font-medium">URL do Logo</label><input name="logo_url" type="url" required class="mt-1 w-full rounded-md border-gray-300 shadow-sm"></div>
+
+                <h3 class="font-semibold border-b pb-1 pt-4">Cloudinary (Obrigatório para Publicação)</h3>
+                <div><label class="block text-sm font-medium">Cloud Name</label><input name="cloudinary_cloud_name" required class="mt-1 w-full rounded-md border-gray-300 shadow-sm"></div>
+                <div><label class="block text-sm font-medium">API Key</label><input name="cloudinary_api_key" required class="mt-1 w-full rounded-md border-gray-300 shadow-sm"></div>
+                <div><label class="block text-sm font-medium">API Secret</label><input name="cloudinary_api_secret" type="password" required class="mt-1 w-full rounded-md border-gray-300 shadow-sm"></div>
+
+                <h3 class="font-semibold border-b pb-1 pt-4">Design da Imagem</h3>
+                <div class="grid grid-cols-3 gap-2">
+                    <div><label class="block text-sm font-medium">Cor Borda</label><input name="bg_color_primary" type="color" value="#d90429" class="mt-1 w-full h-10 rounded-md border-gray-300"></div>
+                    <div><label class="block text-sm font-medium">Cor Fundo</label><input name="bg_color_secondary" type="color" value="#0d1b2a" class="mt-1 w-full h-10 rounded-md border-gray-300"></div>
+                    <div><label class="block text-sm font-medium">Cor Texto</label><input name="text_color" type="color" value="#FFFFFF" class="mt-1 w-full h-10 rounded-md border-gray-300"></div>
+                </div>
+                 <div class="grid grid-cols-2 gap-2">
+                    <div><label class="block text-sm font-medium">Tam. Fonte Título</label><input name="font_size_title" type="number" value="50" class="mt-1 w-full rounded-md border-gray-300 shadow-sm"></div>
+                    <div><label class="block text-sm font-medium">Tam. Fonte Rodapé</label><input name="font_size_footer" type="number" value="30" class="mt-1 w-full rounded-md border-gray-300 shadow-sm"></div>
+                </div>
+
+                <h3 class="font-semibold border-b pb-1 pt-4">Conteúdo e Redes Sociais</h3>
+                <div><label class="block text-sm font-medium">Texto do Rodapé (Assinatura)</label><input name="footer_text" placeholder="@seucliente" class="mt-1 w-full rounded-md border-gray-300 shadow-sm"></div>
+                <div><label class="block text-sm font-medium">Hashtags</label><textarea name="hashtags" rows="2" class="mt-1 w-full rounded-md border-gray-300 shadow-sm"></textarea></div>
+                <div><label class="block text-sm font-medium">Template da Legenda</label><textarea name="caption_template" rows="3" class="mt-1 w-full rounded-md border-gray-300 shadow-sm" placeholder="{title}&#x0a;&#x0a;{excerpt}&#x0a;&#x0a;{hashtags}"></textarea></div>
+                <div><label class="block text-sm font-medium">Token da API Meta</label><input name="meta_api_token" type="password" class="mt-1 w-full rounded-md border-gray-300 shadow-sm"></div>
+                <div><label class="block text-sm font-medium">ID do Instagram</label><input name="instagram_id" class="mt-1 w-full rounded-md border-gray-300 shadow-sm"></div>
+                <div><label class="block text-sm font-medium">ID da Página do Facebook</label><input name="facebook_page_id" class="mt-1 w-full rounded-md border-gray-300 shadow-sm"></div>
+
+                <h3 class="font-semibold border-b pb-1 pt-4">Configurações Opcionais</h3>
+                 <div><label class="block text-sm font-medium">URL do Feed RSS</label><input name="rss_url" type="url" class="mt-1 w-full rounded-md border-gray-300 shadow-sm"></div>
+                 <div><label class="block text-sm font-medium">URL do WordPress</label><input name="wp_url" type="url" placeholder="https://seuwordpress.com" class="mt-1 w-full rounded-md border-gray-300 shadow-sm"></div>
+                <div><label class="block text-sm font-medium">Usuário do WordPress</label><input name="wp_user" class="mt-1 w-full rounded-md border-gray-300 shadow-sm"></div>
+                <div><label class="block text-sm font-medium">Senha de Aplicativo do WP</label><input name="wp_password" type="password" class="mt-1 w-full rounded-md border-gray-300 shadow-sm"></div>
+                <div><label class="block text-sm font-medium">URL do JSON</label><input name="json_url" type="url" class="mt-1 w-full rounded-md border-gray-300 shadow-sm"></div>
+
+                <button type="submit" class="w-full bg-blue-600 text-white font-semibold py-2 px-4 rounded-md hover:bg-blue-700">Salvar Cliente</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Lista de Clientes -->
+    <div class="lg:col-span-2">
+        <div class="card p-6">
+            <h2 class="text-2xl font-bold mb-4">Clientes Cadastrados</h2>
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50"><tr><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Cliente</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Cloudinary Cloud Name</th><th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Ações</th></tr></thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        {% for client in clients %}
+                        <tr>
+                            <td class="px-6 py-4 whitespace-nowrap"><div class="flex items-center"><img class="h-10 w-10 rounded-full object-cover" src="{{ client.logo_url }}" alt="Logo"><div class="ml-4 font-medium">{{ client.name }}</div></div></td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ client.cloudinary_cloud_name }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium"><a href="{{ url_for('edit_client', client_id=client.id) }}" class="text-indigo-600 hover:text-indigo-900">Editar</a></td>
+                        </tr>
+                        {% else %}
+                        <tr><td colspan="3" class="px-6 py-4 text-center text-gray-500">Nenhum cliente cadastrado ainda.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

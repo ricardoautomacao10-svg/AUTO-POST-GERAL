@@ -1,0 +1,73 @@
+{% extends "layout.html" %}
+
+{% block title %}Editar {{ client.name }}{% endblock %}
+
+{% block content %}
+<div class="card max-w-3xl mx-auto p-6">
+    <h2 class="text-2xl font-bold mb-4">Editando: {{ client.name }}</h2>
+    <form action="{{ url_for('edit_client', client_id=client.id) }}" method="POST" class="space-y-4">
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+                <h3 class="font-semibold border-b pb-1 mb-2">Informações Básicas</h3>
+                <div class="space-y-4">
+                    <div><label class="block text-sm font-medium">Nome do Cliente</label><input name="name" required class="mt-1 w-full rounded-md border-gray-300 shadow-sm" value="{{ client.name }}"></div>
+                    <div><label class="block text-sm font-medium">URL do Logo</label><input name="logo_url" type="url" required class="mt-1 w-full rounded-md border-gray-300 shadow-sm" value="{{ client.logo_url }}"></div>
+                </div>
+
+                <h3 class="font-semibold border-b pb-1 pt-4 mb-2">Cloudinary</h3>
+                 <div class="space-y-4">
+                    <div><label class="block text-sm font-medium">Cloud Name</label><input name="cloudinary_cloud_name" class="mt-1 w-full rounded-md border-gray-300 shadow-sm" value="{{ client.cloudinary_cloud_name or '' }}"></div>
+                    <div><label class="block text-sm font-medium">API Key</label><input name="cloudinary_api_key" class="mt-1 w-full rounded-md border-gray-300 shadow-sm" value="{{ client.cloudinary_api_key or '' }}"></div>
+                    <div><label class="block text-sm font-medium">API Secret (deixe em branco para não alterar)</label><input name="cloudinary_api_secret" type="password" class="mt-1 w-full rounded-md border-gray-300 shadow-sm"></div>
+                </div>
+
+                <h3 class="font-semibold border-b pb-1 pt-4 mb-2">Design da Imagem</h3>
+                 <div class="space-y-4">
+                    <div class="grid grid-cols-3 gap-2">
+                        <div><label class="block text-sm font-medium">Cor Borda</label><input name="bg_color_primary" type="color" value="{{ client.bg_color_primary }}" class="mt-1 w-full h-10 rounded-md border-gray-300"></div>
+                        <div><label class="block text-sm font-medium">Cor Fundo</label><input name="bg_color_secondary" type="color" value="{{ client.bg_color_secondary }}" class="mt-1 w-full h-10 rounded-md border-gray-300"></div>
+                        <div><label class="block text-sm font-medium">Cor Texto</label><input name="text_color" type="color" value="{{ client.text_color }}" class="mt-1 w-full h-10 rounded-md border-gray-300"></div>
+                    </div>
+                     <div class="grid grid-cols-2 gap-2">
+                        <div><label class="block text-sm font-medium">Tam. Fonte Título</label><input name="font_size_title" type="number" value="{{ client.font_size_title }}" class="mt-1 w-full rounded-md border-gray-300 shadow-sm"></div>
+                        <div><label class="block text-sm font-medium">Tam. Fonte Rodapé</label><input name="font_size_footer" type="number" value="{{ client.font_size_footer }}" class="mt-1 w-full rounded-md border-gray-300 shadow-sm"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div>
+                 <h3 class="font-semibold border-b pb-1 mb-2">Conteúdo e Redes</h3>
+                <div class="space-y-4">
+                    <div><label class="block text-sm font-medium">Texto do Rodapé (Assinatura)</label><input name="footer_text" class="mt-1 w-full rounded-md border-gray-300 shadow-sm" value="{{ client.footer_text or '' }}"></div>
+                    <div><label class="block text-sm font-medium">Hashtags</label><textarea name="hashtags" rows="2" class="mt-1 w-full rounded-md border-gray-300 shadow-sm">{{ client.hashtags or '' }}</textarea></div>
+                    <div><label class="block text-sm font-medium">Template da Legenda</label><textarea name="caption_template" rows="3" class="mt-1 w-full rounded-md border-gray-300 shadow-sm">{{ client.caption_template or '' }}</textarea></div>
+                    <div><label class="block text-sm font-medium">Token da API Meta (deixe em branco para não alterar)</label><input name="meta_api_token" type="password" class="mt-1 w-full rounded-md border-gray-300 shadow-sm"></div>
+                    <div><label class="block text-sm font-medium">ID do Instagram</label><input name="instagram_id" class="mt-1 w-full rounded-md border-gray-300 shadow-sm" value="{{ client.instagram_id or '' }}"></div>
+                    <div><label class="block text-sm font-medium">ID da Página do Facebook</label><input name="facebook_page_id" class="mt-1 w-full rounded-md border-gray-300 shadow-sm" value="{{ client.facebook_page_id or '' }}"></div>
+                </div>
+
+                <h3 class="font-semibold border-b pb-1 pt-4 mb-2">Configurações Opcionais</h3>
+                <div class="space-y-4">
+                    <div><label class="block text-sm font-medium">URL do Feed RSS</label><input name="rss_url" type="url" class="mt-1 w-full rounded-md border-gray-300 shadow-sm" value="{{ client.rss_url or '' }}"></div>
+                    <div><label class="block text-sm font-medium">URL do WordPress</label><input name="wp_url" type="url" class="mt-1 w-full rounded-md border-gray-300 shadow-sm" value="{{ client.wp_url or '' }}"></div>
+                    <div><label class="block text-sm font-medium">Usuário do WordPress</label><input name="wp_user" class="mt-1 w-full rounded-md border-gray-300 shadow-sm" value="{{ client.wp_user or '' }}"></div>
+                    <div><label class="block text-sm font-medium">Senha de Aplicativo (em branco para não alterar)</label><input name="wp_password" type="password" class="mt-1 w-full rounded-md border-gray-300 shadow-sm"></div>
+                    <div><label class="block text-sm font-medium">URL do JSON</label><input name="json_url" type="url" class="mt-1 w-full rounded-md border-gray-300 shadow-sm" value="{{ client.json_url or '' }}"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="flex items-center justify-between pt-4 mt-6 border-t">
+            <button type="submit" class="bg-blue-600 text-white font-semibold py-2 px-4 rounded-md hover:bg-blue-700">Salvar Alterações</button>
+            <a href="{{ url_for('admin_panel') }}" class="text-sm text-gray-600 hover:underline">Cancelar</a>
+        </div>
+    </form>
+    <div class="mt-6 border-t pt-4">
+        <form action="{{ url_for('delete_client', client_id=client.id) }}" method="POST" onsubmit="return confirm('Tem certeza que deseja excluir este cliente?');">
+            <button type="submit" class="text-sm text-red-600 hover:text-red-800 hover:underline">Excluir Cliente Permanentemente</button>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
