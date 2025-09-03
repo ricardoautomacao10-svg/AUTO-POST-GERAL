@@ -5,3 +5,4 @@ Pillow
 cloudinary
 feedparser
 gunicorn
+lxml
