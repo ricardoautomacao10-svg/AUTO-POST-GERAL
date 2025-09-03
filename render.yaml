@@ -1,0 +1,26 @@
+# Este arquivo é um "Blueprint" que diz ao Render como configurar seu projeto.
+services:
+  # Define o serviço web principal
+  - type: web
+    name: automacao-social
+    # Ambiente de execução
+    env: python
+    # Região do servidor (Frankfurt é uma boa opção para latência com a Europa/Brasil)
+    region: frankfurt
+    # Define o plano (Free é suficiente para começar)
+    plan: free
+    # Comandos para construir o projeto
+    buildCommand: |
+      pip install --upgrade pip
+      pip install -r requirements.txt
+      # Roda o init_db durante a construção para garantir que o BD exista no disco
+      python database.py
+    # Comando para iniciar a aplicação
+    startCommand: "gunicorn --bind 0.0.0.0:$PORT app:app"
+    # Adiciona um disco persistente para salvar o banco de dados
+    disks:
+      - name: automacao-db-disk
+        # Onde o disco será montado no sistema de arquivos do servidor
+        mountPath: /data
+        # Tamanho do disco em GB (1GB é mais que suficiente)
+        sizeGB: 1
