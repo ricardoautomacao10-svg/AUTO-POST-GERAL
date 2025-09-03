@@ -1,4 +1,9 @@
-# ==============================================================================
+from bs4 import BeautifulSoup, XMLParsedAsHTMLWarning
+import warnings
+
+# Ignora o aviso sobre usar o parser de HTML para XML, pois vamos tratar isso
+warnings.filterwarnings("ignore", category=XMLParsedAsHTMLWarning)
+
 # BLOCO 1: IMPORTAÇÕES E CONFIGURAÇÃO INICIAL
 # ==============================================================================
 import os
@@ -156,39 +161,39 @@ def delete_client(client_id):
         db = get_db(); db.execute('DELETE FROM clients WHERE id = ?', (client_id,)); db.commit()
         flash('Cliente removido com sucesso!', 'success')
     except Exception as e: flash(f'Erro ao remover cliente: {e}', 'danger')
-    return redirect(url_for('admin_panel'))
+def get_article_details(url):
+    """Busca os detalhes de um artigo (título, resumo, imagem) a partir de uma URL."""
+    try:
+        response = requests.get(url, timeout=15)
+        response.raise_for_status()
+        soup = BeautifulSoup(response.content, 'html.parser')
 
-# ==============================================================================
-# BLOCO 3: ROTAS DE PUBLICAÇÃO
-# ==============================================================================
+        title = soup.find('meta', property='og:title')
+        excerpt = soup.find('meta', property='og:description')
+        image_url = soup.find('meta', property='og:image')
 
-@app.route('/generate_manual', methods=['POST'])
-def generate_manual_post():
-    db = get_db()
-    client_config = db.execute('SELECT * FROM clients WHERE id = ?', (request.form.get('client_id'),)).fetchone()
-    if not client_config: flash("Erro: Cliente não encontrado.", "danger"); return redirect(url_for('admin_panel'))
-    dados_noticia = extrair_dados_noticia(request.form.get('article_url'))
-    if not dados_noticia or not dados_noticia.get('url_imagem'):
-        flash("Não foi possível extrair dados (especialmente a imagem) da URL.", "danger"); return redirect(url_for('admin_panel'))
-    imagem_bytes = criar_imagem_post(dados_noticia['url_imagem'], dados_noticia['titulo'], client_config)
-    if not imagem_bytes: flash("Ocorreu um erro ao gerar a imagem.", "danger"); return redirect(url_for('admin_panel'))
-    nome_arquivo = f"post_manual_{client_config['id']}_{secrets.token_hex(4)}"
-    public_url, msg_upload = upload_para_cloudinary(imagem_bytes, nome_arquivo, client_config)
-    if not public_url: flash(f"❌ {msg_upload}", "danger"); return redirect(url_for('admin_panel'))
-    resumo_curto = textwrap.shorten(dados_noticia['resumo'], width=200, placeholder="...")
-    caption_template = client_config.get('caption_template') or "{title}\n\n{excerpt}\n\n{hashtags}"
-    legenda_final = caption_template.format(title=dados_noticia['titulo'], excerpt=resumo_curto, hashtags=client_config.get('hashtags', ''))
-    sucesso_ig, msg_ig = publicar_no_instagram(public_url, legenda_final, client_config); flash(f"Instagram: {msg_ig}", "success" if sucesso_ig else "danger")
-    sucesso_fb, msg_fb = publicar_no_facebook(public_url, legenda_final, client_config); flash(f"Facebook: {msg_fb}", "success" if sucesso_fb else "danger")
-    return redirect(url_for('admin_panel'))
+        return {
+            "title": title['content'] if title else soup.title.string,
+            "excerpt": excerpt['content'] if excerpt else "Resumo não encontrado.",
+            "image_url": image_url['content'] if image_url else None
+        }
+    except Exception as e:
+        print(f"❌ [ERRO] Falha ao extrair detalhes da URL {url}: {e}")
+        return None
 
-def find_image_in_entry(entry):
-    if 'media_content' in entry and any('image' in m.get('type', '') for m in entry.media_content): return next((m['url'] for m in entry.media_content if 'image' in m.get('type', '')), None)
-    if 'links' in entry and any('image' in l.get('type', '') for l in entry.links): return next((l.href for l in entry.links if 'image' in l.get('type', '')), None)
-    if 'summary' in entry:
-        img = BeautifulSoup(entry.summary, 'html.parser').find('img')
-        if img and img.has_attr('src'): return img['src']
-    return None
+def fetch_rss_feed(feed_url):
+    """Busca e analisa um feed RSS, retornando as notícias."""
+    print(f"📰 Buscando feed RSS de: {feed_url}")
+    try:
+        # Usa o parser lxml-xml para maior confiabilidade com feeds
+        feed = feedparser.parse(feed_url)
+        if feed.bozo:
+            # Bozo flag é 1 (True) se o feed estiver malformado
+            raise Exception(f"Feed malformado - {feed.bozo_exception}")
+        return feed.entries
+    except Exception as e:
+        print(f"❌ [ERRO] Não foi possível buscar ou analisar o feed RSS {feed_url}: {e}")
+        return []
 
 @app.route('/run_automation', methods=['POST'])
 def run_automation():
@@ -246,4 +251,5 @@ def run_automation():
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port, debug=True)
+
 
