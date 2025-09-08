@@ -311,7 +311,7 @@ def criar_imagem_post(url_imagem_noticia, titulo_post, config_cliente):
         draw.rounded_rectangle([(50, 620), (1030, 1030)], radius=40, fill=config_cliente['bg_color_secondary'])
         logo.thumbnail((220, 220))
         imagem_final.paste(logo, ((1080 - logo.width) // 2, 620 - (logo.height // 2)), logo)
-        linhas_texto = textwrap.wrap(titulo_post.upper(), width=32)
+        linhas_texto = textwrap.wrap(titulo_post.upper(), width=40)
         draw.text((540, 800), "\n".join(linhas_texto), font=fonte_titulo, fill=config_cliente['text_color'], anchor="mm", align="center")
         draw.text((540, 980), config_cliente['footer_text'], font=fonte_rodape, fill=config_cliente['text_color'], anchor="ms", align="center")
         buffer_saida = io.BytesIO()
@@ -511,3 +511,4 @@ if __name__ == '__main__':
 
 
 >>>>>>> 48d2c29e23d2649983469009aa790868af8841ab
+
